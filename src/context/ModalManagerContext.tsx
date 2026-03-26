@@ -4,15 +4,33 @@ import {
   createContext,
   useReducer,
   useCallback,
+  useMemo,
   type ReactNode,
 } from "react";
 import { GoogleSheetsModal } from "@/components/GoogleSheetsModal/GoogleSheetsModal";
 import type {
-  ModalState,
-  ModalAction,
   ModalManagerContextValue,
   EmbedMode,
 } from "@/components/GoogleSheetsModal/types";
+
+interface ModalInstance {
+  id: string;
+  url: string;
+  title?: string;
+  mode: EmbedMode;
+  zIndex: number;
+}
+
+interface ModalState {
+  modals: ModalInstance[];
+  nextZIndex: number;
+}
+
+type ModalAction =
+  | { type: "OPEN_MODAL"; payload: Omit<ModalInstance, "zIndex"> }
+  | { type: "CLOSE_MODAL"; payload: { id: string } }
+  | { type: "CLOSE_ALL" }
+  | { type: "BRING_TO_FRONT"; payload: { id: string } };
 
 const initialState: ModalState = {
   modals: [],
@@ -84,10 +102,13 @@ export function ModalManagerProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "BRING_TO_FRONT", payload: { id } });
   }, []);
 
+  const contextValue = useMemo(
+    () => ({ modals: state.modals, openSheet, closeSheet, closeAll, bringToFront }),
+    [state.modals, openSheet, closeSheet, closeAll, bringToFront]
+  );
+
   return (
-    <ModalManagerContext.Provider
-      value={{ modals: state.modals, openSheet, closeSheet, closeAll, bringToFront }}
-    >
+    <ModalManagerContext.Provider value={contextValue}>
       {children}
       {state.modals.map((modal) => (
         <GoogleSheetsModal

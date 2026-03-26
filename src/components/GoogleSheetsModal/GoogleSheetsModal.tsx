@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
 import type { GoogleSheetsModalProps } from "./types";
-import { toEmbedUrl, isGoogleSheetsUrl } from "./utils";
+import { toEmbedUrl } from "./utils";
 
 export function GoogleSheetsModal({
   url,
@@ -15,7 +15,7 @@ export function GoogleSheetsModal({
 }: GoogleSheetsModalProps) {
   const [mounted, setMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [iframeError, setIframeError] = useState<string | null>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -35,7 +35,7 @@ export function GoogleSheetsModal({
   useEffect(() => {
     if (isOpen) {
       setIsLoading(true);
-      setError(null);
+      setIframeError(null);
     }
   }, [isOpen, url]);
 
@@ -46,20 +46,32 @@ export function GoogleSheetsModal({
     [onClose]
   );
 
-  if (!mounted || !isOpen) return null;
+  const handleIframeLoad = useCallback(() => {
+    setIsLoading(false);
+  }, []);
 
-  let embedUrl: string;
-  try {
-    if (!isGoogleSheetsUrl(url)) {
-      throw new Error("Некорректная ссылка на Google Таблицу");
+  const handleIframeError = useCallback(() => {
+    setIsLoading(false);
+    setIframeError(
+      "Не удалось загрузить таблицу. Возможно, она не разрешает встраивание."
+    );
+  }, []);
+
+  const { embedUrl, urlError } = useMemo(() => {
+    try {
+      return { embedUrl: toEmbedUrl(url, mode), urlError: null };
+    } catch (err) {
+      return {
+        embedUrl: "",
+        urlError:
+          err instanceof Error ? err.message : "Ошибка обработки URL",
+      };
     }
-    embedUrl = toEmbedUrl(url, mode);
-  } catch (err) {
-    embedUrl = "";
-    if (!error) {
-      setError(err instanceof Error ? err.message : "Ошибка обработки URL");
-    }
-  }
+  }, [url, mode]);
+
+  const error = urlError || iframeError;
+
+  if (!mounted || !isOpen) return null;
 
   const modal = (
     <div
@@ -72,7 +84,6 @@ export function GoogleSheetsModal({
       aria-label={title || "Google Sheets"}
     >
       <div className="relative flex w-full max-w-5xl flex-col rounded-lg bg-white shadow-2xl md:h-[80vh] h-[90vh] dark:bg-zinc-900">
-        {/* Header */}
         <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
           <h2 className="truncate text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             {title || "Google Таблица"}
@@ -104,7 +115,6 @@ export function GoogleSheetsModal({
           </div>
         </div>
 
-        {/* Content */}
         <div className="relative flex-1 overflow-hidden">
           {error ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
@@ -128,13 +138,8 @@ export function GoogleSheetsModal({
               <iframe
                 src={embedUrl}
                 className="h-full w-full border-0"
-                onLoad={() => setIsLoading(false)}
-                onError={() => {
-                  setIsLoading(false);
-                  setError(
-                    "Не удалось загрузить таблицу. Возможно, она не разрешает встраивание."
-                  );
-                }}
+                onLoad={handleIframeLoad}
+                onError={handleIframeError}
                 allow="clipboard-read; clipboard-write"
                 sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
               />

@@ -17,17 +17,6 @@ export interface ModalInstance {
   zIndex: number;
 }
 
-export type ModalAction =
-  | { type: "OPEN_MODAL"; payload: Omit<ModalInstance, "zIndex"> }
-  | { type: "CLOSE_MODAL"; payload: { id: string } }
-  | { type: "CLOSE_ALL" }
-  | { type: "BRING_TO_FRONT"; payload: { id: string } };
-
-export interface ModalState {
-  modals: ModalInstance[];
-  nextZIndex: number;
-}
-
 export interface ModalManagerContextValue {
   modals: ModalInstance[];
   openSheet: (

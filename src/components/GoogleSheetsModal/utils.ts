@@ -20,25 +20,40 @@ export function isGoogleSheetsUrl(url: string): boolean {
 }
 
 export function toEmbedUrl(rawUrl: string, mode: EmbedMode = "edit"): string {
-  if (!isGoogleSheetsUrl(rawUrl)) {
-    throw new Error("Invalid Google Sheets URL");
+  let parsed: URL;
+  try {
+    parsed = new URL(rawUrl);
+  } catch {
+    throw new Error("Некорректная ссылка на Google Таблицу");
+  }
+
+  if (
+    parsed.hostname !== "docs.google.com" ||
+    !parsed.pathname.includes("/spreadsheets/d/")
+  ) {
+    throw new Error("Некорректная ссылка на Google Таблицу");
   }
 
   const sheetId = extractSheetId(rawUrl);
   if (!sheetId) {
-    throw new Error("Could not extract sheet ID from URL");
+    throw new Error("Не удалось извлечь ID таблицы из URL");
   }
 
-  const parsed = new URL(rawUrl);
-  const gid = parsed.searchParams.get("gid") || parsed.hash.match(/gid=(\d+)/)?.[1];
+  const gid =
+    parsed.searchParams.get("gid") ||
+    parsed.hash.match(/gid=(\d+)/)?.[1];
 
   if (mode === "view") {
-    const url = new URL(`https://docs.google.com/spreadsheets/d/${sheetId}/preview`);
+    const url = new URL(
+      `https://docs.google.com/spreadsheets/d/${sheetId}/preview`
+    );
     if (gid) url.searchParams.set("gid", gid);
     return url.toString();
   }
 
-  const url = new URL(`https://docs.google.com/spreadsheets/d/${sheetId}/edit`);
+  const url = new URL(
+    `https://docs.google.com/spreadsheets/d/${sheetId}/edit`
+  );
   url.searchParams.set("embedded", "true");
   url.searchParams.set("rm", "minimal");
   if (gid) url.searchParams.set("gid", gid);

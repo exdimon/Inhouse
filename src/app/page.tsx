@@ -2,6 +2,20 @@
 
 import { useState } from "react";
 import { useGoogleSheetsModal } from "@/components/GoogleSheetsModal";
+import type { EmbedMode } from "@/components/GoogleSheetsModal";
+
+const EXAMPLES: { name: string; url: string; mode: EmbedMode }[] = [
+  {
+    name: "Пример: Sales Pipeline",
+    url: "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms/edit",
+    mode: "edit",
+  },
+  {
+    name: "Пример: Project Tracker",
+    url: "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms/edit#gid=0",
+    mode: "view",
+  },
+];
 
 export default function Home() {
   const { openSheet, closeAll, modals } = useGoogleSheetsModal();
@@ -17,19 +31,6 @@ export default function Home() {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") handleOpen();
   };
-
-  const examples = [
-    {
-      name: "Пример: Sales Pipeline",
-      url: "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms/edit",
-      mode: "edit" as const,
-    },
-    {
-      name: "Пример: Project Tracker",
-      url: "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms/edit#gid=0",
-      mode: "view" as const,
-    },
-  ];
 
   return (
     <div className="flex flex-1 flex-col bg-zinc-50 font-sans dark:bg-zinc-950">
@@ -50,7 +51,6 @@ export default function Home() {
       </header>
 
       <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-6 py-10">
-        {/* URL Input */}
         <section className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
           <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Открыть Google Таблицу
@@ -74,13 +74,12 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Example Sheets */}
         <section>
           <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Примеры таблиц
           </h2>
           <div className="grid gap-4 sm:grid-cols-2">
-            {examples.map((example) => (
+            {EXAMPLES.map((example) => (
               <div
                 key={example.name}
                 className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900"
