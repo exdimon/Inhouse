@@ -2,20 +2,6 @@
 
 import { useState } from "react";
 import { useGoogleSheetsModal } from "@/components/GoogleSheetsModal";
-import type { EmbedMode } from "@/components/GoogleSheetsModal";
-
-const EXAMPLES: { name: string; url: string; mode: EmbedMode }[] = [
-  {
-    name: "Пример: Sales Pipeline",
-    url: "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms/edit",
-    mode: "edit",
-  },
-  {
-    name: "Пример: Project Tracker",
-    url: "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms/edit#gid=0",
-    mode: "view",
-  },
-];
 
 export default function Home() {
   const { openSheet, closeAll, modals } = useGoogleSheetsModal();
@@ -71,38 +57,6 @@ export default function Home() {
             >
               Открыть
             </button>
-          </div>
-        </section>
-
-        <section>
-          <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-            Примеры таблиц
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {EXAMPLES.map((example) => (
-              <div
-                key={example.name}
-                className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900"
-              >
-                <h3 className="mb-2 font-medium text-zinc-900 dark:text-zinc-100">
-                  {example.name}
-                </h3>
-                <p className="mb-4 text-sm text-zinc-500 dark:text-zinc-400">
-                  Режим: {example.mode === "edit" ? "Редактирование" : "Просмотр"}
-                </p>
-                <button
-                  onClick={() =>
-                    openSheet(example.url, {
-                      title: example.name,
-                      mode: example.mode,
-                    })
-                  }
-                  className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
-                >
-                  Открыть таблицу
-                </button>
-              </div>
-            ))}
           </div>
         </section>
       </main>
